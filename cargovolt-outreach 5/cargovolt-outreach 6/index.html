@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CargoVolt — Carrier Outreach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-mark">CV</div>
+        <div class="logo-text">CargoVolt</div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-tab="compose">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Compose
+        </button>
+        <button class="nav-item" data-tab="carriers">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Carriers
+          <span class="nav-badge" id="navCarrierCount" style="display:none"></span>
+        </button>
+        <button class="nav-item" data-tab="replies">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Replies
+          <span class="nav-badge" id="navReplyCount">3</span>
+        </button>
+        <button class="nav-item" data-tab="offers">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Offers
+          <span class="nav-badge" id="navOfferCount" style="display:none;"></span>
+        </button>
+        <button class="nav-item" data-tab="autoreply">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+          Settings
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="outlook-status" id="outlookStatus">
+          <div class="status-dot disconnected"></div>
+          <span>Outlook disconnected</span>
+        </div>
+        <button class="connect-btn" id="connectBtn" onclick="connectOutlook()">Connect Outlook</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- COMPOSE TAB -->
+      <section class="tab-panel active" id="tab-compose">
+        <div class="panel-header">
+          <div>
+            <h1>New outreach</h1>
+            <p class="panel-sub">Compose and send to your carrier list</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-ghost" onclick="previewEmail()">Preview</button>
+            <button class="btn-primary" onclick="sendEmails()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              Send via Outlook
+            </button>
+          </div>
+        </div>
+
+        <div id="sentBanner" class="banner banner-success" style="display:none">
+          Emails queued and sending via Outlook. Track responses in the Replies tab.
+        </div>
+        <div id="errorBanner" class="banner banner-warn" style="display:none">
+          No carrier list selected. Go to Carrier Lists and upload or select a list first.
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.5rem;">
+          <label>Carrier list</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <select id="carrierListSelect" style="flex:1;" onchange="selectCarrierList()">
+              <option value="">— Select a saved list —</option>
+            </select>
+            <span id="selectedListCount" style="font-size:12px; color:var(--text-3); white-space:nowrap;"></span>
+            <button class="btn-ghost" onclick="switchTab('carriers')" style="white-space:nowrap;">Manage lists</button>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label>Subject line</label>
+            <input type="text" id="subject" value="{rate} — {pickup_city} &gt; {delivery_city}" />
+          </div>
+          <div class="form-group">
+            <label>Market / project</label>
+            <input type="text" id="marketField" placeholder="e.g. Atlanta, Charlotte, Mid-Atlantic" />
+          </div>
+          <div class="form-group">
+            <label>Equipment type</label>
+            <select id="equipField">
+              <option>Flatbed</option>
+              <option>Step deck</option>
+              <option>RGN</option>
+              <option>Flatbed or step deck</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pickup city</label>
+            <input type="text" id="pickupCity" placeholder="e.g. Kingman, IN" oninput="syncOfferLane()" />
+          </div>
+          <div class="form-group">
+            <label>Delivery city</label>
+            <input type="text" id="deliveryCity" placeholder="e.g. Paris, IL" oninput="syncOfferLane()" />
+          </div>
+          <div class="form-group">
+            <label>Distance (miles)</label>
+            <input type="number" id="distanceField" placeholder="e.g. 50" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Number of loads</label>
+            <input type="number" id="loadCount" placeholder="e.g. 5" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Commodity</label>
+            <input type="text" id="commodity" placeholder="e.g. Crane Mats" />
+          </div>
+          <div class="form-group">
+            <label>Start date</label>
+            <input type="text" id="startDate" placeholder="e.g. tomorrow, Monday" />
+          </div>
+          <div class="form-group">
+            <label>Rate — low end</label>
+            <input type="text" id="rateLow" placeholder="e.g. $500" oninput="syncOfferLane()" />
+          </div>
+          <div class="form-group">
+            <label>Rate — high end <span style="color:var(--text-3); font-weight:400;">(optional)</span></label>
+            <input type="text" id="rateHigh" placeholder="e.g. $600" oninput="syncOfferLane()" />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:1.5rem;">
+          <div class="label-row">
+            <label>Email body</label>
+            <div class="merge-tags">
+              <span class="tag-label">Insert:</span>
+              <button class="merge-tag" onclick="insertTag('{carrier_name}')">carrier name</button>
+              <button class="merge-tag" onclick="insertTag('{pickup_city}')">pickup</button>
+              <button class="merge-tag" onclick="insertTag('{delivery_city}')">delivery</button>
+              <button class="merge-tag" onclick="insertTag('{distance}')">distance</button>
+              <button class="merge-tag" onclick="insertTag('{load_count}')">load count</button>
+              <button class="merge-tag" onclick="insertTag('{commodity}')">commodity</button>
+              <button class="merge-tag" onclick="insertTag('{start_date}')">start date</button>
+              <button class="merge-tag" onclick="insertTag('{rate}')">rate / range</button>
+              <button class="merge-tag" onclick="insertTag('{equipment}')">equipment</button>
+            </div>
+          </div>
+          <textarea id="emailBody">Hey {carrier_name} —
+
+Got {load_count} {equipment} loads moving {pickup_city} to {delivery_city} starting {start_date}. {distance} miles, {commodity}.
+
+Paying {rate} per load.{one_truck_line}
+
+Reply back or call me if you've got capacity.
+
+{contact_name}
+CargoVolt — 404-510-9705</textarea>
+        </div>
+
+        <div id="progressSection" style="display:none; margin-top:1.5rem;">
+          <div class="progress-row">
+            <span class="progress-label" id="progressLabel">Queuing emails...</span>
+            <span class="progress-pct" id="progressPct">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+      </section>
+
+      <!-- CARRIERS TAB -->
+      <section class="tab-panel" id="tab-carriers">
+        <div class="panel-header">
+          <div>
+            <h1>Carrier lists</h1>
+            <p class="panel-sub">Saved lists by lane — reuse across projects</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+              Upload new list
+            </button>
+          </div>
+        </div>
+
+        <input type="file" id="fileInput" accept=".csv,.xlsx" style="display:none" onchange="handleFile(event)" />
+
+        <div id="libraryEmpty" class="upload-zone" onclick="document.getElementById('fileInput').click()">
+          <div class="upload-icon">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          </div>
+          <div class="upload-title">Upload your first carrier list</div>
+          <div class="upload-sub">CSV · columns: carrier_name, email, market (optional)</div>
+          <button class="btn-ghost" style="margin-top:12px;" onclick="loadSampleData(event)">Load sample data</button>
+        </div>
+
+        <div id="libraryGrid" style="display:none;">
+          <div id="listCards" style="display:flex; flex-direction:column; gap:10px; margin-bottom:2rem;"></div>
+        </div>
+
+        <!-- Expanded list view -->
+        <div id="listDetailView" style="display:none;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:1.5rem;">
+            <button class="btn-ghost" onclick="closeListDetail()" style="padding:7px 12px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            </button>
+            <div>
+              <div style="font-size:16px; font-weight:500; color:var(--text-1);" id="detailListName"></div>
+              <div style="font-size:12px; color:var(--text-3);" id="detailListMeta"></div>
+            </div>
+            <div style="margin-left:auto; display:flex; gap:8px;">
+              <button class="btn-ghost" onclick="deleteActiveList()" style="color:var(--red); border-color:rgba(224,82,82,0.3);">Delete list</button>
+              <button class="btn-primary" onclick="selectListForCompose()">Use for outreach</button>
+            </div>
+          </div>
+          <div class="table-toolbar">
+            <span class="table-count" id="detailCount"></span>
+            <input type="text" id="filterInput" placeholder="Filter by name or market..." class="filter-input" oninput="filterCarriers()" />
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Carrier</th><th>Email</th><th>Market</th><th>Status</th></tr></thead>
+              <tbody id="carrierRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- OFFERS TAB -->
+      <section class="tab-panel" id="tab-offers">
+        <div class="panel-header">
+          <div>
+            <h1>Offers</h1>
+            <p class="panel-sub">Track carrier rates coming in on the active lane</p>
+          </div>
+          <button class="btn-primary" onclick="openAddOffer()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+            Log offer
+          </button>
+        </div>
+
+        <div id="offersEmpty" style="text-align:center; padding:3rem 2rem; color:var(--text-3); font-size:14px;">
+          No offers logged yet. Fill in a lane on the Compose tab, then log carrier offers as they come in.
+        </div>
+
+        <div id="offersContent" style="display:none;">
+          <!-- Lane header -->
+          <div class="offer-lane-header" id="offerLaneHeader"></div>
+
+          <!-- Average stat -->
+          <div class="stats-row" style="margin-bottom:1.5rem;">
+            <div class="stat-card highlight">
+              <div class="stat-label">Average offer</div>
+              <div class="stat-val" id="offerAvg">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Lowest offer</div>
+              <div class="stat-val" id="offerLow">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Highest offer</div>
+              <div class="stat-val" id="offerHigh">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total offers</div>
+              <div class="stat-val" id="offerCount">0</div>
+            </div>
+          </div>
+
+          <!-- Offer list -->
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Carrier</th>
+                  <th>Rate offered</th>
+                  <th>Notes</th>
+                  <th>Time</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="offerRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADD OFFER MODAL -->
+      <div id="addOfferModal" class="modal-overlay" style="display:none" onclick="closeAddOfferModal(event)">
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">Log carrier offer</div>
+            <button class="modal-close" onclick="document.getElementById('addOfferModal').style.display='none'">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid" style="margin-bottom:1rem;">
+              <div class="form-group">
+                <label>Carrier name</label>
+                <input type="text" id="offerCarrierName" placeholder="e.g. J&T Trucking" />
+              </div>
+              <div class="form-group">
+                <label>Rate offered</label>
+                <input type="text" id="offerRate" placeholder="e.g. $575" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:1.25rem;">
+              <label>Notes <span style="color:var(--text-3); font-weight:400;">(optional)</span></label>
+              <input type="text" id="offerNotes" placeholder="e.g. Available Monday, needs tarp" />
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end;">
+              <button class="btn-ghost" onclick="document.getElementById('addOfferModal').style.display='none'">Cancel</button>
+              <button class="btn-primary" onclick="submitOffer()">Save offer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="saveListModal" class="modal-overlay" style="display:none">
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">Save carrier list</div>
+          </div>
+          <div class="modal-body">
+            <p style="font-size:13px; color:var(--text-2); margin-bottom:1.25rem;">Give this list a name so you can reuse it later. We've suggested one based on your lane.</p>
+            <div class="form-group" style="margin-bottom:1.25rem;">
+              <label>List name</label>
+              <input type="text" id="saveListName" placeholder="e.g. Kingman, IN > Paris, IL — Flatbed" />
+            </div>
+            <div style="font-size:12px; color:var(--text-3); margin-bottom:1.5rem;" id="saveListCarrierCount"></div>
+            <div style="display:flex; gap:8px; justify-content:flex-end;">
+              <button class="btn-ghost" onclick="document.getElementById('saveListModal').style.display='none'">Cancel</button>
+              <button class="btn-primary" onclick="confirmSaveList()">Save list</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPLIES TAB -->
+      <section class="tab-panel" id="tab-replies">
+        <div class="panel-header">
+          <div>
+            <h1>Replies</h1>
+            <p class="panel-sub">Carrier responses to your outreach</p>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Sent</div>
+            <div class="stat-val" id="statSent">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Replied</div>
+            <div class="stat-val">3</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Reply rate</div>
+            <div class="stat-val" id="statRate">—</div>
+          </div>
+          <div class="stat-card highlight">
+            <div class="stat-label">Interested</div>
+            <div class="stat-val">2</div>
+          </div>
+        </div>
+
+        <div class="reply-list">
+          <div class="reply-item">
+            <div class="avatar">JT</div>
+            <div class="reply-body">
+              <div class="reply-meta">
+                <span class="reply-name">J&amp;T Trucking</span>
+                <span class="pill pill-green">Interested</span>
+              </div>
+              <div class="reply-preview">Yeah we've got a flatbed running empty out of Atlanta Friday, what's the rate?</div>
+            </div>
+            <div class="reply-time">2h ago</div>
+          </div>
+          <div class="reply-item">
+            <div class="avatar">BR</div>
+            <div class="reply-body">
+              <div class="reply-meta">
+                <span class="reply-name">Blue Ridge Carriers</span>
+                <span class="pill pill-green">Interested</span>
+              </div>
+              <div class="reply-preview">We can cover that lane. Step deck available Monday AM.</div>
+            </div>
+            <div class="reply-time">4h ago</div>
+          </div>
+          <div class="reply-item">
+            <div class="avatar">SA</div>
+            <div class="reply-body">
+              <div class="reply-meta">
+                <span class="reply-name">Southeast Ag Freight</span>
+                <span class="pill pill-amber">Not available</span>
+              </div>
+              <div class="reply-preview">Trucks are tied up this week, try us again next Monday.</div>
+            </div>
+            <div class="reply-time">6h ago</div>
+          </div>
+        </div>
+
+        <div class="outlook-cta">
+          <div class="cta-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <div class="cta-title">Connect Outlook to see live replies</div>
+            <div class="cta-sub">Replies above are samples. Connect your Outlook account to pull real carrier responses automatically.</div>
+          </div>
+          <button class="btn-primary" onclick="connectOutlook()">Connect Outlook</button>
+        </div>
+      </section>
+
+      <!-- SETTINGS TAB -->
+      <section class="tab-panel" id="tab-autoreply">
+        <div class="panel-header">
+          <div>
+            <h1>Settings</h1>
+            <p class="panel-sub">AI negotiation, auto-reply, and account</p>
+          </div>
+          <button class="btn-primary" onclick="saveSettings()">Save settings</button>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">Your info</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Your name</label>
+              <input type="text" id="contactName" placeholder="Alex" />
+            </div>
+            <div class="form-group">
+              <label>Your email (Outlook)</label>
+              <input type="text" id="replyEmail" placeholder="alex@cargovolt.com" />
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">Auto-reply</div>
+          <div class="toggle-rows">
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Auto-reply when carrier responds</div>
+                <div class="toggle-sub">Sends a reply automatically when a carrier emails back</div>
+              </div>
+              <button class="toggle on" id="autoToggle" onclick="this.classList.toggle('on'); this.classList.toggle('off')"></button>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Flag "interested" replies</div>
+                <div class="toggle-sub">Detects keywords like "available", "can cover", "what's the rate"</div>
+              </div>
+              <button class="toggle on" id="flagToggle" onclick="this.classList.toggle('on'); this.classList.toggle('off')"></button>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Daily reply digest</div>
+                <div class="toggle-sub">Email summary of all replies each morning at 7am</div>
+              </div>
+              <button class="toggle off" id="digestToggle" onclick="this.classList.toggle('on'); this.classList.toggle('off')"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">AI negotiation</div>
+          <div class="ai-nego-info">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Claude reads what the carrier said and writes a negotiating reply based on your target and walk-away rate. Use the generator below manually, or enable auto-reply with Outlook connected to fire automatically.
+          </div>
+          <div class="form-grid" style="margin-bottom:12px;">
+            <div class="form-group">
+              <label>Target rate (what you want to pay)</label>
+              <input type="text" id="negoTarget" placeholder="e.g. $550" />
+            </div>
+            <div class="form-group">
+              <label>Walk-away rate (most you'll pay)</label>
+              <input type="text" id="negoMax" placeholder="e.g. $625" />
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>Negotiation style</label>
+            <select id="negoStyle">
+              <option value="firm">Firm — hold the line, don't move much</option>
+              <option value="flexible" selected>Flexible — give a little to get it covered</option>
+              <option value="cover">Just get it covered — rate is secondary</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Anything else Claude should know <span style="color:var(--text-3); font-weight:400;">(optional)</span></label>
+            <input type="text" id="negoContext" placeholder="e.g. project must start Monday, client is watching closely" />
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">AI reply generator — use now</div>
+          <p style="font-size:13px; color:var(--text-2); margin-bottom:1rem; line-height:1.6;">Paste in what a carrier said and hit Generate. Copy the reply and send it yourself, or use it as a starting point.</p>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>What did the carrier say?</label>
+            <textarea id="carrierReplyInput" style="min-height:90px;" placeholder="e.g. Yeah we can run that lane but I need at least $650 per load"></textarea>
+          </div>
+          <div style="display:flex; gap:8px; margin-bottom:1rem;">
+            <button class="btn-primary" onclick="generateReply()" id="generateBtn">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Generate reply
+            </button>
+            <span id="generateStatus" style="font-size:13px; color:var(--text-3); align-self:center;"></span>
+          </div>
+          <div id="generatedReplyWrap" style="display:none;">
+            <div class="generated-reply-box">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <span style="font-size:11px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:0.05em;">Generated reply</span>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:12px;" onclick="copyReply()">Copy</button>
+              </div>
+              <pre id="generatedReplyText" style="font-family:'DM Sans',sans-serif; font-size:13px; color:var(--text-1); white-space:pre-wrap; line-height:1.7; margin:0;"></pre>
+            </div>
+            <div id="copyConfirm" style="font-size:12px; color:var(--green); margin-top:6px; display:none;">Copied to clipboard</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">Auto-reply (requires Outlook)</div>
+          <div class="toggle-rows">
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Auto-reply with AI negotiation</div>
+                <div class="toggle-sub">When Outlook is connected, Claude reads each reply and fires a negotiating response automatically</div>
+              </div>
+              <button class="toggle on" id="autoToggle" onclick="this.classList.toggle('on'); this.classList.toggle('off')"></button>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Flag "interested" replies</div>
+                <div class="toggle-sub">Detects keywords like "available", "can cover", "what's the rate"</div>
+              </div>
+              <button class="toggle on" id="flagToggle" onclick="this.classList.toggle('on'); this.classList.toggle('off')"></button>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Daily reply digest</div>
+                <div class="toggle-sub">Email summary of all replies each morning at 7am</div>
+              </div>
+              <button class="toggle off" id="digestToggle" onclick="this.classList.toggle('on'); this.classList.toggle('off')"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">Outlook integration</div>
+          <div class="outlook-cta">
+            <div class="cta-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <div class="cta-title">Microsoft Graph API</div>
+              <div class="cta-sub">Connect your Microsoft 365 account to enable real sends, reply tracking, and AI auto-reply. Requires an Azure app registration — takes about 15 minutes to set up.</div>
+            </div>
+            <button class="btn-primary" onclick="connectOutlook()">Connect</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- PREVIEW MODAL -->
+  <div id="previewModal" class="modal-overlay" style="display:none" onclick="closePreview(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Email preview</div>
+        <button class="modal-close" onclick="document.getElementById('previewModal').style.display='none'">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="preview-field"><span class="preview-label">To:</span> <span id="previewTo">carrier@example.com</span></div>
+        <div class="preview-field"><span class="preview-label">Subject:</span> <span id="previewSubject"></span></div>
+        <div class="preview-divider"></div>
+        <pre id="previewBody" class="preview-body"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
