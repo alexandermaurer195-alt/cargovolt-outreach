@@ -17,6 +17,7 @@ function boot() {
   refreshComposeListSelector();
   renderLibraryGrid();
   syncOfferLane();
+  initMsal();
 }
 
 // ─── Tab navigation ───────────────────────────────────────────────────────────
@@ -520,7 +521,7 @@ document.addEventListener('keydown', e => {
 });
 
 // ─── Send ─────────────────────────────────────────────────────────────────────
-function sendEmails() {
+async function sendEmails() {
   hideBanners();
 
   const list = activeListId ? carrierLibrary.find(l => l.id === activeListId) : null;
@@ -530,30 +531,55 @@ function sendEmails() {
   }
 
   const total = list.carriers.length;
+  const isReal = !!outlookToken;
+
   document.getElementById('progressSection').style.display = 'block';
 
-  let i = 0;
-  const step = Math.max(1, Math.ceil(total / 40));
-
-  const interval = setInterval(() => {
-    i = Math.min(i + step, total);
-    const pct = Math.round((i / total) * 100);
-    document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('progressPct').textContent = pct + '%';
-    document.getElementById('progressLabel').textContent = 'Queued ' + i.toLocaleString() + ' of ' + total.toLocaleString() + ' emails...';
-
-    list.carriers.slice(0, i).forEach(c => { if (c.status === 'pending') c.status = 'sent'; });
-
-    if (i >= total) {
-      clearInterval(interval);
-      document.getElementById('progressLabel').textContent = 'Done — ' + total.toLocaleString() + ' emails sent via Outlook';
-      document.getElementById('sentBanner').style.display = 'block';
-      document.getElementById('statSent').textContent = total.toLocaleString();
-      list.lastSentAt = Date.now();
-      saveLibrary();
-      renderLibraryGrid();
+  if (isReal) {
+    // Real sends via Microsoft Graph
+    let sent = 0;
+    for (const carrier of list.carriers) {
+      if (carrier.status === 'sent') continue;
+      const body = getFilledBody(carrier.name);
+      const subject = getFilledSubject();
+      const ok = await sendEmailViaGraph(carrier.email, subject, body);
+      if (ok) {
+        carrier.status = 'sent';
+        sent++;
+      }
+      const pct = Math.round((sent / total) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressPct').textContent = pct + '%';
+      document.getElementById('progressLabel').textContent = 'Sent ' + sent.toLocaleString() + ' of ' + total.toLocaleString() + '...';
     }
-  }, 60);
+    document.getElementById('progressLabel').textContent = 'Done — ' + sent.toLocaleString() + ' emails sent via Outlook';
+    document.getElementById('sentBanner').style.display = 'block';
+    document.getElementById('statSent').textContent = sent.toLocaleString();
+    list.lastSentAt = Date.now();
+    saveLibrary();
+    renderLibraryGrid();
+  } else {
+    // Simulation mode
+    let i = 0;
+    const step = Math.max(1, Math.ceil(total / 40));
+    const interval = setInterval(() => {
+      i = Math.min(i + step, total);
+      const pct = Math.round((i / total) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressPct').textContent = pct + '%';
+      document.getElementById('progressLabel').textContent = 'Queued ' + i.toLocaleString() + ' of ' + total.toLocaleString() + ' emails...';
+      list.carriers.slice(0, i).forEach(c => { if (c.status === 'pending') c.status = 'sent'; });
+      if (i >= total) {
+        clearInterval(interval);
+        document.getElementById('progressLabel').textContent = 'Simulated — connect Outlook to send for real';
+        document.getElementById('sentBanner').style.display = 'block';
+        document.getElementById('statSent').textContent = total.toLocaleString();
+        list.lastSentAt = Date.now();
+        saveLibrary();
+        renderLibraryGrid();
+      }
+    }, 60);
+  }
 }
 
 function hideBanners() {
@@ -677,8 +703,106 @@ function copyReply() {
 }
 
 
-function connectOutlook() {
-  alert('To connect Outlook:\n\n1. Go to portal.azure.com and register an app\n2. Add Mail.Send and Mail.Read permissions\n3. Add your Client ID to this app\n\nSee README.md for step-by-step instructions.');
+// ─── Outlook / MSAL ───────────────────────────────────────────────────────────
+const MSAL_CONFIG = {
+  auth: {
+    clientId: '84f46c8b-29e8-400b-9f9d-ed628c9bb8e9',
+    authority: 'https://login.microsoftonline.com/common',
+    redirectUri: 'https://amazing-malasada-0c0935.netlify.app'
+  },
+  cache: { cacheLocation: 'localStorage' }
+};
+
+const GRAPH_SCOPES = ['Mail.Send', 'Mail.Read', 'User.Read'];
+
+let msalInstance = null;
+let outlookAccount = null;
+let outlookToken = null;
+
+function initMsal() {
+  if (typeof msal === 'undefined') return;
+  msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+  msalInstance.initialize().then(() => {
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length > 0) {
+      outlookAccount = accounts[0];
+      setOutlookConnected(outlookAccount.username);
+      acquireToken();
+    }
+  });
+}
+
+async function connectOutlook() {
+  if (!msalInstance) { alert('Authentication library not loaded. Try refreshing the page.'); return; }
+  try {
+    const result = await msalInstance.loginPopup({ scopes: GRAPH_SCOPES });
+    outlookAccount = result.account;
+    outlookToken = result.accessToken;
+    setOutlookConnected(outlookAccount.username);
+    alert('Outlook connected as ' + outlookAccount.username);
+  } catch (e) {
+    if (e.errorCode !== 'user_cancelled') {
+      alert('Sign-in failed: ' + e.message);
+    }
+  }
+}
+
+async function acquireToken() {
+  if (!msalInstance || !outlookAccount) return null;
+  try {
+    const result = await msalInstance.acquireTokenSilent({ scopes: GRAPH_SCOPES, account: outlookAccount });
+    outlookToken = result.accessToken;
+    return outlookToken;
+  } catch (e) {
+    try {
+      const result = await msalInstance.acquireTokenPopup({ scopes: GRAPH_SCOPES, account: outlookAccount });
+      outlookToken = result.accessToken;
+      return outlookToken;
+    } catch (e2) {
+      return null;
+    }
+  }
+}
+
+function setOutlookConnected(email) {
+  document.getElementById('outlookStatus').innerHTML =
+    '<div class="status-dot connected"></div><span>' + email + '</span>';
+  document.getElementById('connectBtn').textContent = 'Disconnect';
+  document.getElementById('connectBtn').onclick = disconnectOutlook;
+}
+
+function disconnectOutlook() {
+  if (msalInstance && outlookAccount) {
+    msalInstance.logoutPopup({ account: outlookAccount });
+  }
+  outlookAccount = null;
+  outlookToken = null;
+  document.getElementById('outlookStatus').innerHTML =
+    '<div class="status-dot disconnected"></div><span>Outlook disconnected</span>';
+  document.getElementById('connectBtn').textContent = 'Connect Outlook';
+  document.getElementById('connectBtn').onclick = connectOutlook;
+}
+
+async function sendEmailViaGraph(toEmail, subject, body) {
+  const token = await acquireToken();
+  if (!token) { alert('Not connected to Outlook. Please connect first.'); return false; }
+
+  const message = {
+    message: {
+      subject,
+      body: { contentType: 'Text', content: body },
+      toRecipients: [{ emailAddress: { address: toEmail } }]
+    },
+    saveToSentItems: true
+  };
+
+  const res = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify(message)
+  });
+
+  return res.status === 202;
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
