@@ -609,15 +609,26 @@ NEGOTIATION STYLE: ${styleGuide}
 CARRIER'S REPLY:
 "${carrierMsg}"
 
-Write a short, direct reply email negotiating on rate. Rules:
-- Sound like a real broker — conversational, not corporate
+Write a short, direct reply negotiating on rate using Chris Voss "Never Split the Difference" techniques. Rules:
+
+TONE: Calm, warm, unhurried. Never aggressive or desperate. Think late-night FM DJ voice in text form.
+
+TECHNIQUES TO USE (pick what fits naturally):
+- "Are you against..." questions give them an easy "no" that moves things forward. E.g. "Are you against doing this at $550?"
+- "I can't make that work at $650" forces them to solve your problem rather than defend their price
+- Calibrated questions like "How am I supposed to make that work?" put the burden back on them without confrontation
+- Accusation audit: briefly acknowledge their position before countering. E.g. "I know $575 isn't what you were hoping for, but..."
+- Label their situation: "It sounds like you've got trucks available in that area..."
+- Never say "I understand" — it's hollow. Show you understand by referencing specifics.
+
+HARD RULES:
 - Do NOT go over the walk-away rate under any circumstances
-- If the carrier is already at or below target, confirm the rate enthusiastically and ask for their availability
-- If the carrier is above target but below walk-away, counter toward your target with a brief reason (quick turns, easy freight, etc.)
-- If the carrier is above walk-away, politely hold firm or pass
-- No em-dashes. Keep it short — 3 to 5 sentences max
-- End with your name (${contactName}) and "CargoVolt"
-- Do not include a subject line, just the email body`;
+- If carrier is at or below target: confirm enthusiastically, lock in availability
+- If carrier is above target but below walk-away: counter using the techniques above
+- If carrier is above walk-away: "I can't make that work" and hold firm or pass
+- No em-dashes. 3 to 5 sentences max
+- End with ${contactName} and "CargoVolt"
+- No subject line, just the email body`;
 
   const btn = document.getElementById('generateBtn');
   const status = document.getElementById('generateStatus');
