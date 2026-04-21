@@ -641,10 +641,14 @@ Write a short, direct reply email negotiating on rate. Rules:
       document.getElementById('generatedReplyWrap').style.display = 'block';
       status.textContent = '';
     } else {
-      status.textContent = 'Something went wrong. Try again.';
+      // Show full response for debugging
+      const errDetail = data.error ? `${data.error.type}: ${data.error.message}` : JSON.stringify(data).slice(0, 200);
+      status.textContent = 'Error: ' + errDetail;
+      document.getElementById('generatedReplyText').textContent = JSON.stringify(data, null, 2);
+      document.getElementById('generatedReplyWrap').style.display = 'block';
     }
   } catch (e) {
-    status.textContent = 'Error connecting to AI. Check your connection.';
+    status.textContent = 'Network error: ' + e.message;
   } finally {
     btn.disabled = false;
   }
