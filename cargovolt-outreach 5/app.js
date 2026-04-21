@@ -609,26 +609,28 @@ NEGOTIATION STYLE: ${styleGuide}
 CARRIER'S REPLY:
 "${carrierMsg}"
 
-Write a short, direct reply negotiating on rate using Chris Voss "Never Split the Difference" techniques. Rules:
+Write a short reply using Chris Voss "Never Split the Difference" negotiation tactics. Follow this exact structure:
 
-TONE: Calm, warm, unhurried. Never aggressive or desperate. Think late-night FM DJ voice in text form.
+1. ACCUSATION AUDIT first — acknowledge their number briefly. Example: "I know $650 is where you need to be..."
+2. USE "ARE YOU AGAINST" — this is required every time when countering. Example: "Are you against doing this at $550?" or "Are you against working with us at $575?"
+3. ONE reason why your number makes sense for them (quick turn, short miles, easy freight, more loads coming, etc.)
+4. Optional calibrated question to close: "What would it take to make this work?" or "How do we get this done?"
 
-TECHNIQUES TO USE (pick what fits naturally):
-- "Are you against..." questions give them an easy "no" that moves things forward. E.g. "Are you against doing this at $550?"
-- "I can't make that work at $650" forces them to solve your problem rather than defend their price
-- Calibrated questions like "How am I supposed to make that work?" put the burden back on them without confrontation
-- Accusation audit: briefly acknowledge their position before countering. E.g. "I know $575 isn't what you were hoping for, but..."
-- Label their situation: "It sounds like you've got trucks available in that area..."
-- Never say "I understand" — it's hollow. Show you understand by referencing specifics.
+TONE: Calm, warm, never desperate. Late-night FM DJ energy.
+
+NEVER say "I understand" or "I appreciate" — show empathy by referencing their specific situation.
+NEVER do a straight counter without the "Are you against" framing.
+
+IF carrier is at or below target: skip negotiation entirely. Confirm enthusiastically and nail down their availability.
+IF carrier is above walk-away: say "I can't make that work at [their number]" and hold firm. Don't offer more.
+IF carrier is between target and walk-away: use the full structure above.
 
 HARD RULES:
-- Do NOT go over the walk-away rate under any circumstances
-- If carrier is at or below target: confirm enthusiastically, lock in availability
-- If carrier is above target but below walk-away: counter using the techniques above
-- If carrier is above walk-away: "I can't make that work" and hold firm or pass
-- No em-dashes. 3 to 5 sentences max
+- Never go over the walk-away rate
+- No em-dashes
+- 3 to 5 sentences max
 - End with ${contactName} and "CargoVolt"
-- No subject line, just the email body`;
+- No subject line, just the body`;
 
   const btn = document.getElementById('generateBtn');
   const status = document.getElementById('generateStatus');
