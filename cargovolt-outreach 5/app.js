@@ -787,11 +787,14 @@ async function sendEmailViaGraph(toEmail, subject, body) {
   const token = await acquireToken();
   if (!token) { alert('Not connected to Outlook. Please connect first.'); return false; }
 
+  const ccEmail = localStorage.getItem('cv_cc_email') || '';
+
   const message = {
     message: {
       subject,
       body: { contentType: 'Text', content: body },
-      toRecipients: [{ emailAddress: { address: toEmail } }]
+      toRecipients: [{ emailAddress: { address: toEmail } }],
+      ccRecipients: ccEmail ? [{ emailAddress: { address: ccEmail } }] : []
     },
     saveToSentItems: true
   };
@@ -813,6 +816,7 @@ function saveSettings() {
 
   localStorage.setItem('cv_contact_name', name);
   localStorage.setItem('cv_reply_email', email);
+  localStorage.setItem('cv_cc_email', document.getElementById('ccEmail').value.trim());
   localStorage.setItem('cv_auto_reply', document.getElementById('autoToggle').classList.contains('on') ? '1' : '0');
   localStorage.setItem('cv_flag_replies', document.getElementById('flagToggle').classList.contains('on') ? '1' : '0');
   localStorage.setItem('cv_digest', document.getElementById('digestToggle').classList.contains('on') ? '1' : '0');
@@ -828,6 +832,8 @@ function loadSettings() {
   const email = localStorage.getItem('cv_reply_email');
   if (name) document.getElementById('contactName').value = name;
   if (email) document.getElementById('replyEmail').value = email;
+  const ccEmail = localStorage.getItem('cv_cc_email');
+  if (ccEmail) document.getElementById('ccEmail').value = ccEmail;
 
   const negoTarget = localStorage.getItem('cv_nego_target');
   const negoMax = localStorage.getItem('cv_nego_max');
