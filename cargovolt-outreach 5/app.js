@@ -703,7 +703,87 @@ function copyReply() {
 }
 
 
-// ─── Outlook / MSAL ───────────────────────────────────────────────────────────
+// ─── Inbox polling ────────────────────────────────────────────────────────────
+let pollInterval = null;
+let knownMessageIds = new Set();
+
+function startPolling() {
+  if (pollInterval) return;
+  fetchReplies();
+  pollInterval = setInterval(fetchReplies, 60000);
+}
+
+function stopPolling() {
+  if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+}
+
+async function fetchReplies() {
+  const token = await acquireToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch('/.netlify/functions/fetch-replies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    });
+    const data = await res.json();
+    if (data.value) renderReplies(data.value);
+  } catch (e) {
+    console.log('Poll error:', e.message);
+  }
+}
+
+function renderReplies(messages) {
+  const list = document.getElementById('replyList');
+  if (!messages || messages.length === 0) return;
+
+  let newCount = 0;
+  const items = messages.map(msg => {
+    const isNew = !knownMessageIds.has(msg.id);
+    if (isNew) { knownMessageIds.add(msg.id); newCount++; }
+
+    const from = msg.from?.emailAddress?.name || msg.from?.emailAddress?.address || 'Unknown';
+    const initials = from.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const preview = msg.bodyPreview ? msg.bodyPreview.slice(0, 100) : '';
+    const time = timeAgo(new Date(msg.receivedDateTime).getTime());
+
+    const interested = /available|can cover|can do|what.s the rate|interested|yes|works for me/i.test(msg.bodyPreview || '');
+    const notAvail = /not available|tied up|can.t|cannot|no capacity|pass/i.test(msg.bodyPreview || '');
+    const pill = interested
+      ? '<span class="pill pill-green">Interested</span>'
+      : notAvail ? '<span class="pill pill-amber">Not available</span>' : '';
+
+    return `<div class="reply-item">
+      <div class="avatar">${escHtml(initials)}</div>
+      <div class="reply-body">
+        <div class="reply-meta"><span class="reply-name">${escHtml(from)}</span>${pill}</div>
+        <div class="reply-preview">${escHtml(preview)}</div>
+      </div>
+      <div class="reply-time">${time}</div>
+    </div>`;
+  }).join('');
+
+  list.innerHTML = items || '<div style="text-align:center; padding:3rem 2rem; color:var(--text-3); font-size:14px;">No replies yet.</div>';
+
+  // Update stats
+  const replied = messages.length;
+  const interested = messages.filter(m => /available|can cover|can do|what.s the rate|interested|yes|works for me/i.test(m.bodyPreview || '')).length;
+  document.getElementById('statReplied').textContent = replied;
+  document.getElementById('statInterested').textContent = interested;
+  const sent = parseInt(document.getElementById('statSent').textContent) || 0;
+  document.getElementById('statRate').textContent = sent > 0 ? Math.round((replied / sent) * 100) + '%' : '—';
+
+  // Update nav badge
+  const badge = document.getElementById('navReplyCount');
+  if (replied > 0) { badge.textContent = replied; badge.style.display = 'inline'; }
+
+  // Hide the connect CTA since we're pulling real data
+  const cta = document.getElementById('repliesOutlookCta');
+  if (cta) cta.style.display = 'none';
+}
+
+
 const MSAL_CONFIG = {
   auth: {
     clientId: '84f46c8b-29e8-400b-9f9d-ed628c9bb8e9',
@@ -771,6 +851,7 @@ function setOutlookConnected(email) {
   document.getElementById('connectBtn').onclick = disconnectOutlook;
   const cta = document.getElementById('repliesOutlookCta');
   if (cta) cta.style.display = 'none';
+  startPolling();
 }
 
 function disconnectOutlook() {
@@ -779,6 +860,7 @@ function disconnectOutlook() {
   }
   outlookAccount = null;
   outlookToken = null;
+  stopPolling();
   document.getElementById('outlookStatus').innerHTML =
     '<div class="status-dot disconnected"></div><span>Outlook disconnected</span>';
   document.getElementById('connectBtn').textContent = 'Connect Outlook';
