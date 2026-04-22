@@ -707,7 +707,7 @@ function copyReply() {
 const MSAL_CONFIG = {
   auth: {
     clientId: '84f46c8b-29e8-400b-9f9d-ed628c9bb8e9',
-    authority: 'https://login.microsoftonline.com/25f925e1-3f69-4174-be09-15ab9c72255b',
+    authority: 'https://login.microsoftonline.com/common',
     redirectUri: 'https://amazing-malasada-0c0935.netlify.app'
   },
   cache: { cacheLocation: 'localStorage' }
