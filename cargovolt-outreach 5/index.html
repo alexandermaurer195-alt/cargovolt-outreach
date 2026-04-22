@@ -29,7 +29,7 @@
         <button class="nav-item" data-tab="replies">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           Replies
-          <span class="nav-badge" id="navReplyCount">3</span>
+          <span class="nav-badge" id="navReplyCount" style="display:none;"></span>
         </button>
         <button class="nav-item" data-tab="offers">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -358,7 +358,7 @@ CargoVolt — 404-510-9705</textarea>
           </div>
           <div class="stat-card">
             <div class="stat-label">Replied</div>
-            <div class="stat-val">3</div>
+            <div class="stat-val" id="statReplied">0</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Reply rate</div>
@@ -366,44 +366,12 @@ CargoVolt — 404-510-9705</textarea>
           </div>
           <div class="stat-card highlight">
             <div class="stat-label">Interested</div>
-            <div class="stat-val">2</div>
+            <div class="stat-val" id="statInterested">0</div>
           </div>
         </div>
 
-        <div class="reply-list">
-          <div class="reply-item">
-            <div class="avatar">JT</div>
-            <div class="reply-body">
-              <div class="reply-meta">
-                <span class="reply-name">J&amp;T Trucking</span>
-                <span class="pill pill-green">Interested</span>
-              </div>
-              <div class="reply-preview">Yeah we've got a flatbed running empty out of Atlanta Friday, what's the rate?</div>
-            </div>
-            <div class="reply-time">2h ago</div>
-          </div>
-          <div class="reply-item">
-            <div class="avatar">BR</div>
-            <div class="reply-body">
-              <div class="reply-meta">
-                <span class="reply-name">Blue Ridge Carriers</span>
-                <span class="pill pill-green">Interested</span>
-              </div>
-              <div class="reply-preview">We can cover that lane. Step deck available Monday AM.</div>
-            </div>
-            <div class="reply-time">4h ago</div>
-          </div>
-          <div class="reply-item">
-            <div class="avatar">SA</div>
-            <div class="reply-body">
-              <div class="reply-meta">
-                <span class="reply-name">Southeast Ag Freight</span>
-                <span class="pill pill-amber">Not available</span>
-              </div>
-              <div class="reply-preview">Trucks are tied up this week, try us again next Monday.</div>
-            </div>
-            <div class="reply-time">6h ago</div>
-          </div>
+        <div class="reply-list" id="replyList">
+          <div style="text-align:center; padding:3rem 2rem; color:var(--text-3); font-size:14px;">No replies yet. Connect Outlook to pull real carrier responses automatically.</div>
         </div>
 
         <div class="outlook-cta">
