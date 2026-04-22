@@ -769,6 +769,8 @@ function setOutlookConnected(email) {
     '<div class="status-dot connected"></div><span>' + email + '</span>';
   document.getElementById('connectBtn').textContent = 'Disconnect';
   document.getElementById('connectBtn').onclick = disconnectOutlook;
+  const cta = document.getElementById('repliesOutlookCta');
+  if (cta) cta.style.display = 'none';
 }
 
 function disconnectOutlook() {
@@ -781,6 +783,8 @@ function disconnectOutlook() {
     '<div class="status-dot disconnected"></div><span>Outlook disconnected</span>';
   document.getElementById('connectBtn').textContent = 'Connect Outlook';
   document.getElementById('connectBtn').onclick = connectOutlook;
+  const cta = document.getElementById('repliesOutlookCta');
+  if (cta) cta.style.display = 'flex';
 }
 
 async function sendEmailViaGraph(toEmail, subject, body) {
